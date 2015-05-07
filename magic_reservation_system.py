@@ -18,3 +18,7 @@ class CinemaReservation:
         return "\n".join(help)
 
     def show_moves(self):
+        cursor = self.db_conn.cursor()
+        cursor.execute('''SELECT * FROM Movies ORDER BY rating DESC''')
+        movies_by_rating = cursor.fetchall()
+        return movies_by_rating
