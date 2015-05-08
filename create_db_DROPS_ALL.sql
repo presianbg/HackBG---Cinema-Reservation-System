@@ -34,3 +34,10 @@ INSERT INTO Movies(name, rating)
 VALUES ("The Hunger Games: Catching Fire", 7.9),
        ("Wreck-It Ralph", 7.8),
        ("Her", 8.3);
+
+INSERT INTO Projections(movie_id, type, projection_date, projection_time)
+VALUES(1, "3D", "2014-04-01", "19:10"),
+      (1, "2D", "2014-04-01", "19:30"),
+      (2, "3D", "2014-04-01", "22:00"),
+      (2, "2D", "2014-04-01", "22:30"),
+      (3, "3D", "2014-04-01", "14:00");
