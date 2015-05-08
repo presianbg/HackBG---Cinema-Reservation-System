@@ -7,3 +7,5 @@ conn = sqlite3.connect(DB_NAME)
 with open(SQL_FILE, "r") as f:
     conn.executescript(f.read())
     conn.commit()
+
+cur = conn.cursor()
