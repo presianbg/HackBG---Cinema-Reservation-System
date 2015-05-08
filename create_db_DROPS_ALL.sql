@@ -29,3 +29,8 @@ CREATE TABLE IF NOT EXISTS Reservations(
     col INTEGER,
    FOREIGN KEY(projection_id) REFERENCES Projections(id)
     );
+
+INSERT INTO Movies(name, rating)
+VALUES ("The Hunger Games: Catching Fire", 7.9),
+       ("Wreck-It Ralph", 7.8),
+       ("Her", 8.3);
