@@ -18,6 +18,10 @@ class CinemaReservation:
         WHERE id = ?
     '''
 
+    GET_AVAIL_SEATS_FOR_PROJECTION = """
+    SELECT COUNT(id) AS available_seats FROM Reservations 
+    """
+
     @staticmethod
     def create_help():
         help = ["Here is the list of commands:",
@@ -58,5 +62,6 @@ class CinemaReservation:
         pptable = []
         headers = ["id", "date", "time", "type"]
         for row in projections_by_movie:
+            # taken_seats = cursor.execute(cls.GET_AVAIL_SEATS_FOR_PROJECTION), (row[0],)
             pptable.append([row[0], row[3], row[4], row[2]])
         return tabulate(pptable, headers, tablefmt="fancy_grid")
