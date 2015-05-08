@@ -36,7 +36,7 @@ class CinemaReservation:
         cursor.execute(cls.GET_MOMIVES_BY_RATING)
         movies_by_rating = cursor.fetchall()
         for row in movies_by_rating:
-            pptable.append(row[1], row[2])
+            pptable.append([row[1], row[2]])
         return tabulate(pptable, headers, tablefmt="fancy_grid")
 
     @classmethod
