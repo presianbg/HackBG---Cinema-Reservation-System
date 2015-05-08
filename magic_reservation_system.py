@@ -5,8 +5,17 @@ from tabulate import tabulate
 
 class CinemaReservation:
 
-    GET_MOMIVES_BY_RATING = '''
+    GET_MOVIES_BY_RATING = '''
         SELECT * FROM Movies ORDER BY rating DESC
+    '''
+
+    GET_PROJECTIONS = '''
+        SELECT * FROM Projections
+        WHERE movie_id = ? AND projection_date LIKE ?
+    '''
+    GET_MOVIE_NAME_BY_ID = '''
+        SELECT name FROM Movies
+        WHERE id = ?
     '''
 
     @staticmethod
@@ -31,14 +40,23 @@ class CinemaReservation:
     @classmethod
     def show_movies(cls, connection):
         pptable = []
-        headers = ["Movie Name", "Movie Rating"]
+        headers = ["id", "Movie Name", "Movie Rating"]
         cursor = connection.cursor()
-        cursor.execute(cls.GET_MOMIVES_BY_RATING)
+        cursor.execute(cls.GET_MOVIES_BY_RATING)
         movies_by_rating = cursor.fetchall()
         for row in movies_by_rating:
-            pptable.append([row[1], row[2]])
+            pptable.append([row[0], row[1], row[2]])
         return tabulate(pptable, headers, tablefmt="fancy_grid")
 
     @classmethod
-    def show_movie_projections(cls, connection, movie_id, date='*'):
-        pass
+    def show_movie_projections(cls, connection, movie_id, date='%%'):
+        cursor = connection.cursor()
+        cursor.execute(cls.GET_PROJECTIONS, (movie_id, date))
+        projections_by_movie = cursor.fetchall()
+        if not projections_by_movie:
+            return 'There are No Movies on that DATE'
+        pptable = []
+        headers = ["id", "date", "time", "type"]
+        for row in projections_by_movie:
+            pptable.append([row[0], row[3], row[4], row[2]])
+        return tabulate(pptable, headers, tablefmt="fancy_grid")

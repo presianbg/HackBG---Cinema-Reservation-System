@@ -16,8 +16,11 @@ def main():
         elif CinemaReservation.is_command(command, "show_movies"):
             print (CinemaReservation.show_movies(db_connection))
 
-        elif CinemaReservation.is_command(command, "show_movie_projections <movie_id> [<date>]"):
-            print(CinemaReservation.show_movie_projections(db_connection, command[1], command[2]))
+        elif CinemaReservation.is_command(command, "show_movie_projections"):
+            if len(command) > 2:
+                print(CinemaReservation.show_movie_projections(db_connection, command[1], command[2]))
+            else:
+                print(CinemaReservation.show_movie_projections(db_connection, command[1]))
 
         elif CinemaReservation.is_command(command, "exit"):
             db_connection.close()
