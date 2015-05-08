@@ -13,6 +13,7 @@ class CinemaReservation:
         SELECT * FROM Projections
         WHERE movie_id = ? AND projection_date LIKE ?
     '''
+
     GET_MOVIE_NAME_BY_ID = '''
         SELECT name FROM Movies
         WHERE id = ?
@@ -37,26 +38,44 @@ class CinemaReservation:
     def is_command(command_tuple, command_string):
         return command_tuple[0] == command_string
 
+    @staticmethod
+    def trigger_unknown_command():
+        unknown_command = ["Error: Unknown command!",
+                           "Why don't you type help,",
+                           "to see a list of commands."]
+
+        return "\n".join(unknown_command)
+
     @classmethod
     def show_movies(cls, connection):
-        pptable = []
-        headers = ["id", "Movie Name", "Movie Rating"]
         cursor = connection.cursor()
         cursor.execute(cls.GET_MOVIES_BY_RATING)
         movies_by_rating = cursor.fetchall()
-        for row in movies_by_rating:
-            pptable.append([row[0], row[1], row[2]])
-        return tabulate(pptable, headers, tablefmt="fancy_grid")
+        headers = ["id", "Movie Name", "Movie Rating"]
+        table_cols = [0, 1, 2]
+        return cls.make_tabulate_tabl(headers, table_cols, movies_by_rating)
 
     @classmethod
     def show_movie_projections(cls, connection, movie_id, date='%%'):
         cursor = connection.cursor()
+
         cursor.execute(cls.GET_PROJECTIONS, (movie_id, date))
         projections_by_movie = cursor.fetchall()
+
+        cursor.execute(cls.GET_MOVIE_NAME_BY_ID, (movie_id,))
+        movie_name = cursor.fetchone()
+
         if not projections_by_movie:
             return 'There are No Movies on that DATE'
-        pptable = []
+
         headers = ["id", "date", "time", "type"]
-        for row in projections_by_movie:
-            pptable.append([row[0], row[3], row[4], row[2]])
+        table_cols = [0, 3, 4, 2]
+        print (movie_name[0])
+        return cls.make_tabulate_tabl(headers, table_cols, projections_by_movie)
+
+    @classmethod
+    def make_tabulate_tabl(cls, headers, table_cols, table_data):
+        pptable = []
+        for row in table_data:
+            pptable.append([row[i] for i in table_cols])
         return tabulate(pptable, headers, tablefmt="fancy_grid")
