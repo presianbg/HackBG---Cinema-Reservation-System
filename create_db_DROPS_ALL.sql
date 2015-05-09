@@ -47,8 +47,8 @@ INSERT INTO Reservations(username, projection_id, row, col)
 VALUES('RadoRado', 1, 2, 1),
       ('RadoRado', 1, 3, 5),
       ('RadoRado', 1, 7, 8),
-      ('Ivo', 3, 1, 1),
-      ('Ivo', 3, 1, 2),
+      ('Ivo', 3, 10, 1),
+      ('Ivo', 3, 1, 10),
       ('Mysterious', 5, 2, 3),
       ('Mysterious', 5, 2, 4);
 

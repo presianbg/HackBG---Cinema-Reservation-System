@@ -1,11 +1,12 @@
 import readline
-import sqlite3
 from tabulate import tabulate
 
 
 class CinemaReservation:
 
     HALL_SEATS = 100
+    HALL_ROWS = 10
+    HALL_COLS = 10
 
     GET_MOVIES_BY_RATING = '''SELECT * FROM Movies
         ORDER BY rating DESC
@@ -17,6 +18,8 @@ class CinemaReservation:
         WHERE movie_id = ? AND projection_date LIKE ?
         ORDER BY projection_date ASC
     '''
+
+    GET_TAKEN_SEATS_FOR_PROJ = '''SELECT row, col FROM Reservations WHERE projection_id = ?'''
 
     @staticmethod
     def create_help():
@@ -68,6 +71,26 @@ class CinemaReservation:
         table_cols = [0, 3, 4, 2, 6]
         print (projections_by_movie[0][5])
         return cls.make_tabulate_tabl(headers, table_cols, projections_by_movie)
+
+    @classmethod
+    def show_hall_layout(cls, connection, projection_id):
+        headers = ['R/C']
+        headers += [i+1 for i in range(cls.HALL_COLS)]
+        table_cols = [i for i in range(cls.HALL_COLS + 1)]
+        data = []
+
+        cursor = connection.cursor()
+        cursor.execute(cls.GET_TAKEN_SEATS_FOR_PROJ, (projection_id, ))
+        taken_seats = cursor.fetchall()
+
+        for row in range(cls.HALL_ROWS):
+            data.append([row + 1])
+            for col in range(cls.HALL_COLS + 1):
+                if (row+1, col+1) in taken_seats:
+                    data[row].append('_X_')
+                else:
+                    data[row].append('FREE')
+        return cls.make_tabulate_tabl(headers, table_cols, data)
 
     @classmethod
     def make_tabulate_tabl(cls, headers, table_cols, table_data):

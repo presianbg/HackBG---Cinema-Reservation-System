@@ -24,6 +24,9 @@ def main():
             else:
                 print("No Movie Selected")
 
+        elif CinemaReservation.is_command(command, "show_hall"):
+            print (CinemaReservation.show_hall_layout(db_connection, command[1]))
+
         elif CinemaReservation.is_command(command, "exit"):
             db_connection.close()
             break
