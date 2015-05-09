@@ -11,13 +11,11 @@ class CinemaReservation:
         ORDER BY rating DESC
     '''
 
-    GET_PROJECTIONS = '''SELECT Projections.*, ? - (SELECT COUNT(id) FROM Reservations
-        WHERE Reservations.projection_id = Projections.id) AS free_seats FROM Projections
+    GET_PROJECTIONS = '''SELECT Projections.*,
+        (SELECT name FROM Movies WHERE Movies.id = Projections.movie_id),
+        ? - (SELECT COUNT(id) FROM Reservations WHERE Reservations.projection_id = Projections.id) AS free_seats FROM Projections
         WHERE movie_id = ? AND projection_date LIKE ?
-    '''
-
-    GET_MOVIE_NAME_BY_ID = '''SELECT name FROM Movies
-        WHERE id = ?
+        ORDER BY projection_date ASC
     '''
 
     @staticmethod
@@ -63,15 +61,12 @@ class CinemaReservation:
         cursor.execute(cls.GET_PROJECTIONS, (cls.HALL_SEATS, movie_id, date))
         projections_by_movie = cursor.fetchall()
 
-        cursor.execute(cls.GET_MOVIE_NAME_BY_ID, (movie_id,))
-        movie_name = cursor.fetchone()
-
         if not projections_by_movie:
             return 'There are No Movies on that DATE'
 
         headers = ["id", "date", "time", "type", "free_seats"]
-        table_cols = [0, 3, 4, 2, 5]
-        print (movie_name[0])
+        table_cols = [0, 3, 4, 2, 6]
+        print (projections_by_movie[0][5])
         return cls.make_tabulate_tabl(headers, table_cols, projections_by_movie)
 
     @classmethod
