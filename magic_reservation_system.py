@@ -75,7 +75,7 @@ class CinemaReservation:
     @classmethod
     def show_hall_layout(cls, connection, projection_id):
         headers = ['R/C']
-        headers += [i+1 for i in range(cls.HALL_COLS)]
+        headers += ['C-{}'.format(i+1) for i in range(cls.HALL_COLS)]
         table_cols = [i for i in range(cls.HALL_COLS + 1)]
         data = []
 
@@ -84,7 +84,7 @@ class CinemaReservation:
         taken_seats = cursor.fetchall()
 
         for row in range(cls.HALL_ROWS):
-            data.append([row + 1])
+            data.append(['R-{}'.format(row + 1)])
             for col in range(cls.HALL_COLS + 1):
                 if (row+1, col+1) in taken_seats:
                     data[row].append('_X_')
