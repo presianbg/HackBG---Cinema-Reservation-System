@@ -5,17 +5,18 @@ from tabulate import tabulate
 
 class CinemaReservation:
 
-    GET_MOVIES_BY_RATING = '''
-        SELECT * FROM Movies ORDER BY rating DESC
+    HALL_SEATS = 100
+
+    GET_MOVIES_BY_RATING = '''SELECT * FROM Movies
+        ORDER BY rating DESC
     '''
 
-    GET_PROJECTIONS = '''
-        SELECT * FROM Projections
+    GET_PROJECTIONS = '''SELECT Projections.*, ? - (SELECT COUNT(id) FROM Reservations
+        WHERE Reservations.projection_id = Projections.id) AS free_seats FROM Projections
         WHERE movie_id = ? AND projection_date LIKE ?
     '''
 
-    GET_MOVIE_NAME_BY_ID = '''
-        SELECT name FROM Movies
+    GET_MOVIE_NAME_BY_ID = '''SELECT name FROM Movies
         WHERE id = ?
     '''
 
@@ -59,7 +60,7 @@ class CinemaReservation:
     def show_movie_projections(cls, connection, movie_id, date='%%'):
         cursor = connection.cursor()
 
-        cursor.execute(cls.GET_PROJECTIONS, (movie_id, date))
+        cursor.execute(cls.GET_PROJECTIONS, (cls.HALL_SEATS, movie_id, date))
         projections_by_movie = cursor.fetchall()
 
         cursor.execute(cls.GET_MOVIE_NAME_BY_ID, (movie_id,))
@@ -68,8 +69,8 @@ class CinemaReservation:
         if not projections_by_movie:
             return 'There are No Movies on that DATE'
 
-        headers = ["id", "date", "time", "type"]
-        table_cols = [0, 3, 4, 2]
+        headers = ["id", "date", "time", "type", "free_seats"]
+        table_cols = [0, 3, 4, 2, 5]
         print (movie_name[0])
         return cls.make_tabulate_tabl(headers, table_cols, projections_by_movie)
 
