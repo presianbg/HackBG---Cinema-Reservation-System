@@ -4,9 +4,9 @@ from tabulate import tabulate
 
 class CinemaReservation:
 
-    HALL_SEATS = 100
     HALL_ROWS = 10
     HALL_COLS = 10
+    HALL_SEATS = HALL_ROWS * HALL_COLS
 
     GET_MOVIES_BY_RATING = '''SELECT * FROM Movies
         ORDER BY rating DESC
@@ -65,11 +65,10 @@ class CinemaReservation:
         projections_by_movie = cursor.fetchall()
 
         if not projections_by_movie:
-            return 'There are No Movies on that DATE'
+            return False
 
-        headers = ["id", "date", "time", "type", "free_seats"]
-        table_cols = [0, 3, 4, 2, 6]
-        print (projections_by_movie[0][5])
+        headers = ["id", "date", "time", "type", "movie_name", "free_seats"]
+        table_cols = [0, 3, 4, 2, 5, 6]
         return cls.make_tabulate_tabl(headers, table_cols, projections_by_movie)
 
     @classmethod
@@ -98,3 +97,7 @@ class CinemaReservation:
         for row in table_data:
             pptable.append([row[i] for i in table_cols])
         return tabulate(pptable, headers, tablefmt="fancy_grid")
+
+    @classmethod
+    def make_reservation(cls):
+        pass
