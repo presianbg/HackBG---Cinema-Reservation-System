@@ -21,6 +21,8 @@ class CinemaReservation:
 
     GET_TAKEN_SEATS_FOR_PROJ = '''SELECT row, col FROM Reservations WHERE projection_id = ?'''
 
+    GET_IDS_FROM_PROJ = '''SELECT id FROM Projections where movie_id = ?'''
+
     @staticmethod
     def create_help():
         help = ["Here is the list of commands:",
@@ -97,6 +99,12 @@ class CinemaReservation:
         for row in table_data:
             pptable.append([row[i] for i in table_cols])
         return tabulate(pptable, headers, tablefmt="fancy_grid")
+
+    @classmethod
+    def get_id_of_projections(cls, connection, movie_id):
+        cursor = connection.cursor()
+        cursor.execute(cls.GET_IDS_FROM_PROJ, (movie_id, ))
+        return cursor.fetchall()
 
     @classmethod
     def make_reservation(cls):

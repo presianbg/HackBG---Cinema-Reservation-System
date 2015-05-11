@@ -43,10 +43,13 @@ def main():
                 current_reservation.pop(0)
 
                 if current_step == reserve_msg[2][0]:
-                    cur_step_data = get_move()
+                    cur_step_data = get_movie(current_step, data_type)
+
+                elif current_step == reserve_msg[3][0]:
+                    cur_step_data = get_projection(current_step, data_type, recv_data['Step-3'])
 
                 elif current_step == reserve_msg[4][0]:
-                    cur_step_data = check_seats(recv_data['Step-2'], current_step, data_type)
+                    cur_step_data = check_seats(recv_data['Step-2'], current_step, data_type, recv_data['Step-4'])
                 else:
                     cur_step_data = take_user_data(current_step, data_type)
 
@@ -67,8 +70,29 @@ def main():
             print(CinemaReservation.trigger_unknown_command())
 
 
-def get_move():
+def get_movie(step, data_type):
     print (CinemaReservation.show_movies(db_connection))
+    movie_id = None
+    while not CinemaReservation.show_movie_projections(db_connection, movie_id):
+        movie_id = take_user_data(step, data_type)
+        if not movie_id:
+            return False
+    return movie_id
+
+
+def get_projection(step, data_type, movie_id):
+    print (CinemaReservation.show_movie_projections(db_connection, movie_id))
+    l_id = []
+    proj_ids = CinemaReservation.get_id_of_projections(db_connection, movie_id)
+    for ids in proj_ids:
+        l_id.append(ids[0])
+
+    proj_id = None
+    while proj_id not in l_id:
+        proj_id = take_user_data(step, data_type)
+        if not proj_id:
+            return False
+    return proj_id
 
 
 def reservation_flow(step):
@@ -81,7 +105,8 @@ def reservation_flow(step):
         return reserv_funcs[step]
 
 
-def check_seats(numb_of_seats, msg, d_type):
+def check_seats(numb_of_seats, msg, d_type, proj_id):
+    print (CinemaReservation.show_hall_layout(db_connection, proj_id))
     seats = []
     for tick_num, seat in enumerate(range(numb_of_seats)):
         while True:
