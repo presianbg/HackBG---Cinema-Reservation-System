@@ -42,12 +42,10 @@ def main():
                 current_step, data_type = current_reservation[0]
                 current_reservation.pop(0)
 
-                need_view = reservation_flow(current_step)
-                if need_view:
-                    view_tabl = eval(need_view)
-                    print(view_tabl)
+                if current_step == reserve_msg[2][0]:
+                    cur_step_data = get_move()
 
-                if current_step == reserve_msg[4][0]:
+                elif current_step == reserve_msg[4][0]:
                     cur_step_data = check_seats(recv_data['Step-2'], current_step, data_type)
                 else:
                     cur_step_data = take_user_data(current_step, data_type)
@@ -67,6 +65,10 @@ def main():
             if command[0] is '':
                 continue
             print(CinemaReservation.trigger_unknown_command())
+
+
+def get_move():
+    print (CinemaReservation.show_movies(db_connection))
 
 
 def reservation_flow(step):
