@@ -69,6 +69,9 @@ def main():
                 continue
             print(CinemaReservation.trigger_unknown_command())
 
+def reservation_flow():
+    pass
+
 
 def get_movie(step, data_type):
     print (CinemaReservation.show_movies(db_connection))
@@ -95,18 +98,12 @@ def get_projection(step, data_type, movie_id):
     return proj_id
 
 
-def reservation_flow(step):
-
-    reserv_funcs = {"Step 3(choose a movie)>": "CinemaReservation.show_movies(db_connection)",
-                    "Step 4(choose projection)>": "CinemaReservation.show_movie_projections(db_connection, cur_step_data)",
-                    "Step 5(choose seats for ": "CinemaReservation.show_hall_layout(db_connection, cur_step_data)"
-                    }
-    if step in reserv_funcs:
-        return reserv_funcs[step]
-
-
 def check_seats(numb_of_seats, msg, d_type, proj_id):
     print (CinemaReservation.show_hall_layout(db_connection, proj_id))
+    taken_seats = CinemaReservation.get_taken_seats_by_proj(db_connection, proj_id)
+    if numb_of_seats > 100 - len(taken_seats):
+        print ('There are not enough free seats for your reservation')
+        return False
     seats = []
     for tick_num, seat in enumerate(range(numb_of_seats)):
         while True:
@@ -115,6 +112,9 @@ def check_seats(numb_of_seats, msg, d_type, proj_id):
                 if is_give_up(data):
                     return False
                 seat_pos = d_type(int(x.strip()) for x in data.split(','))
+                if seat_pos in taken_seats:
+                    print ('This seat is already taken')
+                    continue
                 seats.append(seat_pos)
                 break
             except Exception as e:

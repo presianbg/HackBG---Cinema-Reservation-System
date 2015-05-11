@@ -80,9 +80,7 @@ class CinemaReservation:
         table_cols = [i for i in range(cls.HALL_COLS + 1)]
         data = []
 
-        cursor = connection.cursor()
-        cursor.execute(cls.GET_TAKEN_SEATS_FOR_PROJ, (projection_id, ))
-        taken_seats = cursor.fetchall()
+        taken_seats = cls.get_taken_seats_by_proj(connection, projection_id)
 
         for row in range(cls.HALL_ROWS):
             data.append(['R-{}'.format(row + 1)])
@@ -104,6 +102,12 @@ class CinemaReservation:
     def get_id_of_projections(cls, connection, movie_id):
         cursor = connection.cursor()
         cursor.execute(cls.GET_IDS_FROM_PROJ, (movie_id, ))
+        return cursor.fetchall()
+
+    @classmethod
+    def get_taken_seats_by_proj(cls, connection, proj_id):
+        cursor = connection.cursor()
+        cursor.execute(cls.GET_TAKEN_SEATS_FOR_PROJ, (proj_id, ))
         return cursor.fetchall()
 
     @classmethod
