@@ -34,31 +34,9 @@ def main():
 
         elif CinemaReservation.is_command(command, "make_reservation"):
             print ('You are about to make reservation! Just folloow the steps. You can give_up @ any time :)')
-            recv_data = {}
-            current_reservation = copy.deepcopy(reserve_msg)
-
-            while current_reservation:
-
-                current_step, data_type = current_reservation[0]
-                current_reservation.pop(0)
-
-                if current_step == reserve_msg[2][0]:
-                    cur_step_data = get_movie(current_step, data_type)
-
-                elif current_step == reserve_msg[3][0]:
-                    cur_step_data = get_projection(current_step, data_type, recv_data['Step-3'])
-
-                elif current_step == reserve_msg[4][0]:
-                    cur_step_data = check_seats(recv_data['Step-2'], current_step, data_type, recv_data['Step-4'])
-                else:
-                    cur_step_data = take_user_data(current_step, data_type)
-
-                if not cur_step_data:
-                    print ('Reservation process aborted!')
-                    break
-
-                step_key = len(reserve_msg) - len(current_reservation)
-                recv_data['Step-{}'.format(step_key)] = cur_step_data
+            user_data = reservation_flow()
+            if user_data:
+                pass
 
         elif CinemaReservation.is_command(command, "exit"):
             db_connection.close()
@@ -69,8 +47,48 @@ def main():
                 continue
             print(CinemaReservation.trigger_unknown_command())
 
+
 def reservation_flow():
-    pass
+    recv_data = {}
+    current_reservation = copy.deepcopy(reserve_msg)
+
+    while current_reservation:
+
+        current_step, data_type = current_reservation[0]
+        current_reservation.pop(0)
+
+        if current_step == reserve_msg[2][0]:
+            cur_step_data = get_movie(current_step, data_type)
+
+        elif current_step == reserve_msg[3][0]:
+            cur_step_data = get_projection(current_step, data_type, recv_data['Step-3'])
+
+        elif current_step == reserve_msg[4][0]:
+            cur_step_data = check_seats(recv_data['Step-2'], current_step, data_type, recv_data['Step-4'])
+
+        elif current_step == reserve_msg[5][0]:
+            cur_step_data = final_notice(current_step, data_type, recv_data)
+
+        else:
+            cur_step_data = take_user_data(current_step, data_type)
+
+        if not cur_step_data:
+            print ('Reservation process aborted!')
+            return False
+
+        step_key = len(reserve_msg) - len(current_reservation)
+        recv_data['Step-{}'.format(step_key)] = cur_step_data
+
+    if recv_data['Step-6'] in 'finalize':
+        return recv_data
+    return False
+
+
+def final_notice(step, data_type, usr_data):
+    print('This is Sum-Up for your Reservation')
+    print(CinemaReservation.get_reservation_info(db_connection, usr_data))
+    is_fin_ok = take_user_data(step, data_type)
+    return is_fin_ok
 
 
 def get_movie(step, data_type):
@@ -112,8 +130,10 @@ def check_seats(numb_of_seats, msg, d_type, proj_id):
                 if is_give_up(data):
                     return False
                 seat_pos = d_type(int(x.strip()) for x in data.split(','))
-                if seat_pos in taken_seats:
-                    print ('This seat is already taken')
+                is_out_row = 0 < seat_pos[0] < 10
+                is_out_col = 0 < seat_pos[1] < 10
+                if seat_pos in taken_seats or not is_out_row or not is_out_col or seat_pos in seats:
+                    print ('This seat is already taken Or Out of Range')
                     continue
                 seats.append(seat_pos)
                 break

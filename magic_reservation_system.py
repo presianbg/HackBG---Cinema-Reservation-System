@@ -23,6 +23,11 @@ class CinemaReservation:
 
     GET_IDS_FROM_PROJ = '''SELECT id FROM Projections where movie_id = ?'''
 
+    GET_RESERV_INF = '''SELECT Projections.projection_date, Projections.projection_time,
+        Projections.type, Movies.name FROM Projections
+        JOIN Movies ON Projections.movie_id == Movies.id WHERE Projections.id = ?
+    '''
+
     @staticmethod
     def create_help():
         help = ["Here is the list of commands:",
@@ -109,6 +114,20 @@ class CinemaReservation:
         cursor = connection.cursor()
         cursor.execute(cls.GET_TAKEN_SEATS_FOR_PROJ, (proj_id, ))
         return cursor.fetchall()
+
+    @classmethod
+    def get_reservation_info(cls, connection, usr_data):
+        proj_id = usr_data['Step-4']
+        seats = usr_data['Step-5']
+        headers = ['Date', 'Time', 'Type', 'Movie', 'Seats']
+        table_cols = [0, 1, 2, 3, 4]
+
+        cursor = connection.cursor()
+        cursor.execute(cls.GET_RESERV_INF, (proj_id, ))
+        data = cursor.fetchall()
+        data[0] += (seats, )
+        return cls.make_tabulate_tabl(headers, table_cols, data)
+
 
     @classmethod
     def make_reservation(cls):
