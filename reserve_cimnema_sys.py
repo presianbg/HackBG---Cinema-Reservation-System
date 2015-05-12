@@ -30,13 +30,13 @@ def main():
             elif len(command) == 2:
                 print(CinemaReservation.show_movie_projections(db_connection, command[1]))
             else:
-                print("No Movie Selected")
+                print(CinemaReservation.show_movie_projections(db_connection))
 
         elif CinemaReservation.is_command(command, "make_reservation"):
             print ('You are about to make reservation! Just folloow the steps. You can give_up @ any time :)')
             user_data = reservation_flow()
             if user_data:
-                pass
+                print(CinemaReservation.make_reservation(db_connection, user_data))
 
         elif CinemaReservation.is_command(command, "exit"):
             db_connection.close()
@@ -79,16 +79,16 @@ def reservation_flow():
         step_key = len(reserve_msg) - len(current_reservation)
         recv_data['Step-{}'.format(step_key)] = cur_step_data
 
-    if recv_data['Step-6'] in 'finalize':
-        return recv_data
-    return False
+    return recv_data
 
 
 def final_notice(step, data_type, usr_data):
     print('This is Sum-Up for your Reservation')
     print(CinemaReservation.get_reservation_info(db_connection, usr_data))
     is_fin_ok = take_user_data(step, data_type)
-    return is_fin_ok
+    if is_fin_ok in 'finalize':
+        return is_fin_ok
+    return False
 
 
 def get_movie(step, data_type):

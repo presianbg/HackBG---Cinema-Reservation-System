@@ -15,7 +15,7 @@ class CinemaReservation:
     GET_PROJECTIONS = '''SELECT Projections.*,
         (SELECT name FROM Movies WHERE Movies.id = Projections.movie_id),
         ? - (SELECT COUNT(id) FROM Reservations WHERE Reservations.projection_id = Projections.id) AS free_seats FROM Projections
-        WHERE movie_id = ? AND projection_date LIKE ?
+        WHERE movie_id LIKE ? AND projection_date LIKE ?
         ORDER BY projection_date ASC
     '''
 
@@ -27,6 +27,8 @@ class CinemaReservation:
         Projections.type, Movies.name FROM Projections
         JOIN Movies ON Projections.movie_id == Movies.id WHERE Projections.id = ?
     '''
+
+    MAKE_RESERVE = '''INSERT INTO Reservations(username, projection_id, row, col) VALUES(?, ?, ?, ?)'''
 
     @staticmethod
     def create_help():
@@ -65,7 +67,7 @@ class CinemaReservation:
         return cls.make_tabulate_tabl(headers, table_cols, movies_by_rating)
 
     @classmethod
-    def show_movie_projections(cls, connection, movie_id, date='%%'):
+    def show_movie_projections(cls, connection, movie_id='%%', date='%%'):
         cursor = connection.cursor()
 
         cursor.execute(cls.GET_PROJECTIONS, (cls.HALL_SEATS, movie_id, date))
@@ -128,7 +130,17 @@ class CinemaReservation:
         data[0] += (seats, )
         return cls.make_tabulate_tabl(headers, table_cols, data)
 
-
     @classmethod
-    def make_reservation(cls):
-        pass
+    def make_reservation(cls, connection, reservation_data):
+        user = reservation_data['Step-1']
+        projection = reservation_data['Step-4']
+        seats = reservation_data['Step-5']
+
+        cursor = connection.cursor()
+
+        for seat in seats:
+            row, col = seat
+            cursor.execute(cls.MAKE_RESERVE, (user, projection, row, col))
+
+        connection.commit()
+        return ('Your Reservation Was Successful')
