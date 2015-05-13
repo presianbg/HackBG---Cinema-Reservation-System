@@ -10,6 +10,7 @@ reserve_msg = [("Step 1(user)>", str),
                ("Step 5(choose seats for ", tuple),
                ("Step 6(Confirm - type 'finalize')>", str)]
 
+
 db_connection = sqlite3.connect(DB_NAME)
 
 
@@ -38,6 +39,13 @@ def main():
             if user_data:
                 print(CinemaReservation.make_reservation(db_connection, user_data))
 
+        elif CinemaReservation.is_command(command, "cancel_reservation"):
+            if len(command) != 2:
+                print('Projection ID not given')
+                continue
+            user = input("User?>")
+            print (CinemaReservation.cancel_reservation(db_connection, command[1], user))
+
         elif CinemaReservation.is_command(command, "exit"):
             db_connection.close()
             break
@@ -61,7 +69,7 @@ def reservation_flow():
             cur_step_data = get_movie(current_step, data_type)
 
         elif current_step == reserve_msg[3][0]:
-            cur_step_data = get_projection(current_step, data_type, recv_data['Step-3'])
+            cur_step_data = get_projection(current_step, data_type, recv_data['Step-3'], recv_data['Step-2'])
 
         elif current_step == reserve_msg[4][0]:
             cur_step_data = check_seats(recv_data['Step-2'], current_step, data_type, recv_data['Step-4'])
@@ -101,38 +109,42 @@ def get_movie(step, data_type):
     return movie_id
 
 
-def get_projection(step, data_type, movie_id):
+def get_projection(step, data_type, movie_id, numb_tickets):
     print (CinemaReservation.show_movie_projections(db_connection, movie_id))
     l_id = []
     proj_ids = CinemaReservation.get_id_of_projections(db_connection, movie_id)
     for ids in proj_ids:
         l_id.append(ids[0])
 
+    no_space = True
     proj_id = None
-    while proj_id not in l_id:
+    while proj_id not in l_id or no_space:
         proj_id = take_user_data(step, data_type)
+        taken_seats = CinemaReservation.get_taken_seats_by_proj(db_connection, proj_id)
+        if numb_tickets > 100 - len(taken_seats):
+            print ('There are not enough free seats for your reservation')
+            continue
+        no_space = False
         if not proj_id:
             return False
     return proj_id
 
 
-def check_seats(numb_of_seats, msg, d_type, proj_id):
+def check_seats(numb_of_seats, step, d_type, proj_id):
     print (CinemaReservation.show_hall_layout(db_connection, proj_id))
     taken_seats = CinemaReservation.get_taken_seats_by_proj(db_connection, proj_id)
-    if numb_of_seats > 100 - len(taken_seats):
-        print ('There are not enough free seats for your reservation')
-        return False
+
     seats = []
     for tick_num, seat in enumerate(range(numb_of_seats)):
         while True:
             try:
-                data = input(msg + 'Tiket-{}>'.format(tick_num + 1))
+                data = input(step + 'Tiket-{}>'.format(tick_num + 1))
                 if is_give_up(data):
                     return False
                 seat_pos = d_type(int(x.strip()) for x in data.split(','))
-                is_out_row = 0 < seat_pos[0] < 10
-                is_out_col = 0 < seat_pos[1] < 10
-                if seat_pos in taken_seats or not is_out_row or not is_out_col or seat_pos in seats:
+                in_row = 0 < seat_pos[0] < 10
+                in_col = 0 < seat_pos[1] < 10
+                if seat_pos in taken_seats or not in_row or not in_col or seat_pos in seats:
                     print ('This seat is already taken Or Out of Range')
                     continue
                 seats.append(seat_pos)

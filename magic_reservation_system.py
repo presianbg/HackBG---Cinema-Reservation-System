@@ -29,6 +29,8 @@ class CinemaReservation:
     '''
 
     MAKE_RESERVE = '''INSERT INTO Reservations(username, projection_id, row, col) VALUES(?, ?, ?, ?)'''
+    GET_RESERVE_BY_USER = '''SELECT * FROM Reservations WHERE username is ? AND projection_ID = ?'''
+    DELETE_RESERVE = '''DELETE FROM Reservations WHERE username is ? AND projection_ID = ?'''
 
     @staticmethod
     def create_help():
@@ -37,7 +39,7 @@ class CinemaReservation:
                 "show_movies                             : Prints all movies ORDERed BY rating",
                 "show_projections <movie_id> [<date>]>   : Prints all projections of a given movie for the given date (date is optional).",
                 "make_reservation                        : Starts the reservation proccess",
-                "cancel_reservation <name>               : Disintegrate given person's reservation",
+                "cancel_reservation <projection>         : Disintegrate given person's reservation",
                 "exit                                    : Exits reservation system"]
         return "\n".join(help)
 
@@ -144,3 +146,15 @@ class CinemaReservation:
 
         connection.commit()
         return ('Your Reservation Was Successful')
+
+    @classmethod
+    def cancel_reservation(cls, connection, projection, user):
+        cursor = connection.cursor()
+        cursor.execute(cls.GET_RESERVE_BY_USER, (user, projection))
+        reservations = cursor.fetchall()
+
+        if reservations:
+            cursor.execute(cls.DELETE_RESERVE, (user, projection))
+            connection.commit()
+            return 'Your Reservation Was DELETED!'
+        return 'No such reservation!'
